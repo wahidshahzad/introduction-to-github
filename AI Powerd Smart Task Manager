@@ -1,0 +1,81 @@
+import { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+export default function SmartTaskManager() {
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState("");
+  const [dueDate, setDueDate] = useState(null);
+
+  const addTask = () => {
+    if (newTask.trim()) {
+      setTasks([...tasks, { text: newTask, date: dueDate, completed: false }]);
+      setNewTask("");
+      setDueDate(null);
+    }
+  };
+
+  const toggleTask = (index) => {
+    setTasks(tasks.map((task, i) => i === index ? { ...task, completed: !task.completed } : task));
+  };
+
+  return (
+    <div className="p-6 space-y-6 bg-gray-100 min-h-screen">
+      <h1 className="text-4xl font-bold text-center text-blue-600">AI-Powered Smart Task Manager</h1>
+      
+      {/* Task Input Section */}
+      <Card className="shadow-lg">
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-3">Add New Task</h2>
+          <Input 
+            type="text" 
+            placeholder="Enter Task" 
+            value={newTask} 
+            onChange={(e) => setNewTask(e.target.value)} 
+            className="mb-2 p-2 border rounded-lg w-full" 
+          />
+          <Calendar selected={dueDate} onSelect={setDueDate} className="mb-2" />
+          <Button onClick={addTask} className="w-full bg-blue-600 hover:bg-blue-700 text-white">Add Task</Button>
+        </CardContent>
+      </Card>
+
+      {/* Task List */}
+      <Card className="shadow-lg">
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-3">Your Tasks</h2>
+          <ul className="space-y-2">
+            {tasks.map((task, index) => (
+              <li key={index} className="flex justify-between items-center border p-3 rounded-lg bg-white shadow-sm">
+                <span className={task.completed ? "line-through text-gray-500" : "text-black font-medium"}>{task.text}</span>
+                <span className="text-sm text-gray-600">{task.date?.toDateString()}</span>
+                <Button onClick={() => toggleTask(index)} className={task.completed ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"}>
+                  {task.completed ? "Undo" : "Complete"}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Progress Chart */}
+      <Card className="shadow-lg">
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-3">Task Progress</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={tasks.map((t, i) => ({ day: i + 1, completed: t.completed ? 1 : 0 }))}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="completed" stroke="#4CAF50" />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
